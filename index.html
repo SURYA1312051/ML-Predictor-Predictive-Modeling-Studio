@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Predictor — Predictive Modeling Studio</title>
+    <meta name="description" content="Interactive ML studio for predictive modeling with Linear Regression, Decision Trees, and Random Forest.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="ambient-bg">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header" id="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a855f7"/></linearGradient></defs>
+                        <rect width="32" height="32" rx="8" fill="url(#lg)"/>
+                        <path d="M8 22L12 14L16 18L20 10L24 16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="14" r="2" fill="#fff"/><circle cx="16" cy="18" r="2" fill="#fff"/><circle cx="20" cy="10" r="2" fill="#fff"/>
+                    </svg>
+                    <h1>ML Predictor</h1>
+                </div>
+                <span class="header-subtitle">Predictive Modeling Studio</span>
+            </div>
+            <div class="header-right">
+                <div class="step-indicator" id="step-indicator">
+                    <div class="step active" data-step="1"><span class="step-number">1</span><span class="step-label">Data</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="2"><span class="step-number">2</span><span class="step-label">Configure</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="3"><span class="step-number">3</span><span class="step-label">Train</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="4"><span class="step-number">4</span><span class="step-label">Results</span></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content" id="main-content">
+            <!-- Step 1: Data -->
+            <section class="step-panel active" id="panel-data" data-step="1">
+                <div class="panel-header">
+                    <h2>Choose Your Dataset</h2>
+                    <p>Select a built-in dataset or upload your own CSV file.</p>
+                </div>
+                <div class="dataset-grid" id="dataset-grid">
+                    <div class="dataset-card" data-dataset="iris" id="card-iris">
+                        <div class="card-icon">🌸</div>
+                        <h3>Iris Flower</h3>
+                        <p>Classify iris species from sepal & petal measurements</p>
+                        <div class="card-meta"><span class="meta-tag">Classification</span><span class="meta-info">150 · 4 features · 3 classes</span></div>
+                    </div>
+                    <div class="dataset-card" data-dataset="wine" id="card-wine">
+                        <div class="card-icon">🍷</div>
+                        <h3>Wine Quality</h3>
+                        <p>Predict wine quality from physicochemical properties</p>
+                        <div class="card-meta"><span class="meta-tag">Classification</span><span class="meta-info">178 · 6 features · 3 classes</span></div>
+                    </div>
+                    <div class="dataset-card" data-dataset="diabetes" id="card-diabetes">
+                        <div class="card-icon">💉</div>
+                        <h3>Diabetes</h3>
+                        <p>Predict diabetes progression from patient metrics</p>
+                        <div class="card-meta"><span class="meta-tag regression">Regression</span><span class="meta-info">442 · 6 features</span></div>
+                    </div>
+                    <div class="dataset-card upload-card" id="card-upload">
+                        <div class="card-icon">📁</div>
+                        <h3>Upload CSV</h3>
+                        <p>Use your own dataset in CSV format with headers</p>
+                        <div class="card-meta"><span class="meta-tag custom">Custom</span><span class="meta-info">Any supervised learning task</span></div>
+                        <input type="file" id="csv-upload" accept=".csv" hidden>
+                    </div>
+                </div>
+                <div class="data-preview hidden" id="data-preview">
+                    <div class="preview-header">
+                        <h3 id="preview-title">Dataset Preview</h3>
+                        <div class="preview-stats" id="preview-stats"></div>
+                    </div>
+                    <div class="table-wrapper"><table id="preview-table"><thead id="preview-thead"></thead><tbody id="preview-tbody"></tbody></table></div>
+                    <div class="preview-actions">
+                        <button class="btn btn-secondary" id="btn-change-data">↻ Change Dataset</button>
+                        <button class="btn btn-primary" id="btn-next-configure">Continue to Configure →</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Configure -->
+            <section class="step-panel" id="panel-configure" data-step="2">
+                <div class="panel-header"><h2>Configure Your Model</h2><p>Select target, features, algorithm, and parameters.</p></div>
+                <div class="config-grid">
+                    <div class="config-card" id="config-target">
+                        <h3>🎯 Target Variable</h3>
+                        <select id="select-target" class="form-select"><option value="">Select target column...</option></select>
+                    </div>
+                    <div class="config-card" id="config-features">
+                        <h3>📊 Features</h3>
+                        <div class="feature-list" id="feature-list"></div>
+                        <div class="feature-actions"><button class="btn btn-sm" id="btn-select-all">Select All</button><button class="btn btn-sm" id="btn-deselect-all">Deselect All</button></div>
+                    </div>
+                    <div class="config-card" id="config-algorithm">
+                        <h3>⚙️ Algorithm</h3>
+                        <div class="algorithm-options" id="algorithm-options">
+                            <label class="algorithm-option selected" data-algo="linear-regression"><input type="radio" name="algorithm" value="linear-regression" checked><div class="algo-info"><span class="algo-name">Linear Regression</span><span class="algo-desc">Best for continuous outcomes</span><span class="algo-badge">Regression</span></div></label>
+                            <label class="algorithm-option" data-algo="decision-tree"><input type="radio" name="algorithm" value="decision-tree"><div class="algo-info"><span class="algo-name">Decision Tree</span><span class="algo-desc">Interpretable tree model</span><span class="algo-badge both">Both</span></div></label>
+                            <label class="algorithm-option" data-algo="random-forest"><input type="radio" name="algorithm" value="random-forest"><div class="algo-info"><span class="algo-name">Random Forest</span><span class="algo-desc">Ensemble for higher accuracy</span><span class="algo-badge both">Both</span></div></label>
+                        </div>
+                    </div>
+                    <div class="config-card" id="config-params">
+                        <h3>🔧 Parameters</h3>
+                        <div class="param-group"><label class="param-label">Train/Test Split <span class="param-value" id="split-value">80/20</span></label><input type="range" id="split-range" min="50" max="90" value="80" step="5" class="form-range"></div>
+                        <div class="param-group" id="param-max-depth"><label class="param-label">Max Depth <span class="param-value" id="depth-value">5</span></label><input type="range" id="depth-range" min="1" max="15" value="5" step="1" class="form-range"></div>
+                        <div class="param-group" id="param-n-trees"><label class="param-label">Number of Trees <span class="param-value" id="trees-value">10</span></label><input type="range" id="trees-range" min="5" max="50" value="10" step="5" class="form-range"></div>
+                        <div class="param-group"><label class="param-label">Task Type</label><select id="select-task-type" class="form-select"><option value="auto">Auto Detect</option><option value="classification">Classification</option><option value="regression">Regression</option></select></div>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button class="btn btn-secondary" id="btn-back-data">← Back</button>
+                    <button class="btn btn-primary" id="btn-train">▶ Train Model</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Training -->
+            <section class="step-panel" id="panel-train" data-step="3">
+                <div class="training-container">
+                    <div class="training-animation"><div class="pulse-ring"></div><div class="pulse-ring delay-1"></div><div class="pulse-ring delay-2"></div>
+                        <div class="training-icon">⚡</div>
+                    </div>
+                    <h2 class="training-title">Training Your Model</h2>
+                    <p class="training-status" id="training-status">Preparing data...</p>
+                    <div class="training-progress"><div class="progress-bar" id="progress-bar"></div></div>
+                    <div class="training-log" id="training-log"></div>
+                </div>
+            </section>
+
+            <!-- Step 4: Results -->
+            <section class="step-panel" id="panel-results" data-step="4">
+                <div class="panel-header"><h2>Model Performance</h2><p id="results-subtitle">Your model has been trained and evaluated.</p></div>
+                <div class="metrics-grid" id="metrics-grid"></div>
+                <div class="viz-container">
+                    <div class="viz-tabs" id="viz-tabs">
+                        <button class="viz-tab active" data-viz="confusion" id="tab-confusion">Confusion Matrix</button>
+                        <button class="viz-tab" data-viz="roc" id="tab-roc">ROC Curve</button>
+                        <button class="viz-tab" data-viz="importance" id="tab-importance">Feature Importance</button>
+                        <button class="viz-tab" data-viz="predictions" id="tab-predictions">Predictions</button>
+                    </div>
+                    <div class="viz-panel active" id="viz-confusion"><div id="chart-confusion" class="chart-container"></div></div>
+                    <div class="viz-panel" id="viz-roc"><div id="chart-roc" class="chart-container"></div></div>
+                    <div class="viz-panel" id="viz-importance"><div id="chart-importance" class="chart-container"></div></div>
+                    <div class="viz-panel" id="viz-predictions"><div id="chart-predictions" class="chart-container"></div></div>
+                </div>
+                <div class="step-actions">
+                    <button class="btn btn-secondary" id="btn-back-configure">← Reconfigure</button>
+                    <button class="btn btn-primary" id="btn-new-model">+ New Model</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="datasets.js"></script>
+    <script src="ml.js"></script>
+    <script src="visualizations.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
